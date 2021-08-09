@@ -23,6 +23,13 @@
 //! If compiling for a specific target, remembering to include
 //! `-C target_cpu=native` allows the detection to become compile time checks,
 //! making it *even* faster.
+
+// #[cfg(all(feature = "mesalock_sgx", target_env = "sgx"))]
+// extern crate std;
+
+// #[cfg(feature = "mesalock_sgx")]
+// extern crate sgx_tstd as std;
+
 #[cfg(feature = "std")]
 extern crate std as core;
 
@@ -181,8 +188,8 @@ impl fmt::Display for Error {
     }
 }
 
-#[cfg(feature = "std")]
-impl std::error::Error for Error {
+#[cfg(feature = "mesalock_sgx")]
+impl sgx_tstd::error::Error for Error {
     fn description(&self) -> &str {
         self.description_str()
     }
@@ -1272,11 +1279,11 @@ mod tests {
         assert_eq!(parse_chunk_size(b"fffffffffffffffff\r\n"), Err(::InvalidChunkSize));
     }
 
-    #[cfg(feature = "std")]
+    #[cfg(feature = "mesalock_sgx")]
     #[test]
     fn test_std_error() {
         use super::Error;
-        use std::error::Error as StdError;
+        use sgx_tstd::error::Error as StdError;
         let err = Error::HeaderName;
         assert_eq!(err.to_string(), err.description());
     }
